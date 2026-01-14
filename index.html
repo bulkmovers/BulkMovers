@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Page metadata and stylesheet -->
+    <meta charset="UTF-8">
+    <title>Bulk Movers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <header class="top-bar">
+        <button class="menu-toggle" aria-expanded="false" aria-controls="menuPanel" aria-label="Open menu">☰</button>
+    </header>
+
+    <nav id="menuPanel" class="menu-panel">
+        <a href="index.html" class="active">Home</a>
+        <a href="about.html">About</a>
+    </nav>
+
+    <!-- Brand logo -->
+    <img class="logo" src="BMLOGO.svg" alt="Bulk Movers">
+    <p class="tagline">Bulky item Removal and Delivery</p>
+    <p class="subtag">Serving DC, MD and Northern VA</p>
+
+    <!-- Toggle between service types -->
+    <div class="toggle" data-active="junk">
+        <div class="toggle-pill" aria-hidden="true"></div>
+        <label class="toggle-option">
+            <input type="radio" name="service" value="junk" checked>
+            <span>Junk Removal</span>
+        </label>
+        <label class="toggle-option">
+            <input type="radio" name="service" value="delivery">
+            <span>Delivery</span>
+        </label>
+    </div>
+
+    <!-- Junk Removal Form -->
+    <form id="junkForm" class="active">
+        <!-- Contact and service details -->
+        <div class="form-group">
+            <label>Pickup Address</label>
+            <input id="junkPickupAddress" type="text" placeholder="Enter pickup address">
+        </div>
+
+        <div class="form-group">
+            <label>Type of Junk</label>
+            <select id="junkType">
+                <option>Furniture</option>
+                <option>Mattress</option>
+                <option>General Household</option>
+                <option>Room(s) Cleanout</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Estimated Volume</label>
+            <select id="junkVolume">
+                <option>Small (1-2 items)</option>
+                <option>Medium (pickup truck load)</option>
+                <option>Large (multiple loads)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Service Date</label>
+            <input id="junkDate" type="date">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Service Time</label>
+            <select id="junkTimeWindow">
+                <option value="">Select a time window</option>
+                <option>All day</option>
+                <option>6AM - 12PM - Morning</option>
+                <option>12PM - 6PM - Afternoon</option>
+                <option>6PM - 12AM - Night</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Additional Notes</label>
+            <textarea id="junkNotes" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Photo of Items</label>
+            <input id="junkPhoto" type="file" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input id="junkPhone" type="tel" placeholder="Enter phone number">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input id="junkEmail" type="email" placeholder="Enter email address">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Contact Method</label>
+            <select id="junkContact">
+                <option value="">Select a contact method</option>
+                <option>Text</option>
+                <option>Call</option>
+            </select>
+        </div>
+
+        <button class="submit-btn" type="button" data-form="junk">Get Free Quote</button>
+    </form>
+
+    <!-- Delivery Form -->
+    <form id="deliveryForm">
+        <!-- Delivery request details -->
+        <div class="form-group">
+            <label>Pickup Location</label>
+            <input id="deliveryPickup" type="text" placeholder="Enter pickup location">
+        </div>
+
+        <div class="form-group">
+            <label>Drop-off Location</label>
+            <input id="deliveryDropoff" type="text" placeholder="Enter delivery address">
+        </div>
+
+        <div class="form-group">
+            <label>Item Description</label>
+            <textarea id="deliveryDescription" rows="3" placeholder="Describe the item(s)"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Service Date</label>
+            <input id="deliveryDate" type="date">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Service Time</label>
+            <select id="deliveryTimeWindow">
+                <option value="">Select a time window</option>
+                <option>All day</option>
+                <option>6AM - 12PM - Morning</option>
+                <option>12PM - 6PM - Afternoon</option>
+                <option>6PM - 12AM - Night</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Item Link</label>
+            <input id="deliveryItemLink" type="url" placeholder="Paste an optional link">
+        </div>
+
+        <div class="form-group">
+            <label>Item Photo</label>
+            <input id="deliveryPhoto" type="file" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input id="deliveryPhone" type="tel" placeholder="Enter phone number">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input id="deliveryEmail" type="email" placeholder="Enter email address">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Contact Method</label>
+            <select id="deliveryContact">
+                <option value="">Select a contact method</option>
+                <option>Text</option>
+                <option>Call</option>
+            </select>
+        </div>
+
+        <button class="submit-btn" type="button" data-form="delivery">Get Free Quote</button>
+    </form>
+</div>
+
+<!-- Success modal -->
+<div class="modal" id="successModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+        <h2 id="successTitle">Request Sent</h2>
+        <p>Your quote request has been received.</p>
+        <div class="modal-actions">
+            <button class="modal-btn" type="button" data-action="another">Get Another Quote</button>
+            <button class="modal-btn secondary" type="button" data-action="close">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Behavior for form toggle -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
