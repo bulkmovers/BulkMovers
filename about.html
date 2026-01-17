@@ -3,39 +3,44 @@
 <head>
     <!-- Page metadata and stylesheet -->
     <meta charset="UTF-8">
-    <title>About - HaulOD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About - Hauler</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<div class="corner-brand">TheHaulerApp</div>
+
 <div class="container">
-    <header class="top-bar">
-        <button class="menu-toggle" aria-expanded="false" aria-controls="menuPanel" aria-label="Open menu">☰</button>
-    </header>
-
-    <nav id="menuPanel" class="menu-panel">
-        <a href="index.html">Home</a>
-        <a href="about.html" class="active">About</a>
-    </nav>
-
     <!-- Brand logo -->
-    <img class="logo" src="BMLOGO.svg" alt="Bulk Movers">
+    <img class="logo" src="Logo.svg" alt="Bulk Movers">
     <p class="tagline">Bulky item Removal and Delivery</p>
     <p class="subtag">Serving DC, MD and Northern VA</p>
 
     <div class="info-card">
-        <h2>About Bulk Movers</h2>
-        <p>We help customers move bulky items and handle cleanouts with fast scheduling and clear pricing. Our team focuses on careful handling, friendly service, and dependable arrival windows.</p>
-        <p>Use the quote form to request junk removal or delivery. Share photos to help us estimate the job and get you the best price.</p>
+        <h2>About The Hauler App</h2>
+        <p>The Hauler App makes hauling simple and easy. We offer fast quotes and quality service you can count on.</p>
+        <p>Request junk removal or delivery in minutes and let us handle the heavy lifting.</p>
     </div>
 
     <div class="info-card">
         <h2>What We Handle</h2>
-        <p>Furniture, mattresses, household cleanouts, and large item deliveries. If it is big or hard to move, we have it covered.</p>
+        <p>We handle both delivery and junk removal. Here are some examples:</p>
+        <ul>
+            <li><strong>Delivery:</strong> Couches, appliances, patio sets, gym equipment, large retail pickups, mulch, salt, Trash cans , and more!</li>
+            <li><strong>Junk Removal:</strong> Furniture, mattresses, garage cleanouts, yard waste, bulk trash and more!</li>
+        </ul>
+        <p>We accept quote requests for any job. If it sounds like a challenge, send it anyway. Special arrangements can be made!</p>
     </div>
 
     <a class="cta-button" href="index.html">Get Free Quote</a>
 </div>
+
+<nav class="bottom-nav" aria-label="Primary">
+    <a class="bottom-nav__item active" href="about.html" aria-current="page">About</a>
+    <a class="bottom-nav__item" href="index.html">Quote</a>
+    <a class="bottom-nav__item" href="faq.html">FAQ</a>
+</nav>
 
 <!-- Behavior for menu and form toggle -->
 <script src="script.js"></script>
