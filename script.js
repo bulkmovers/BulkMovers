@@ -11,10 +11,6 @@ const EMAIL_SERVICE_ID = 'service_b7jknvf';
 const EMAIL_TEMPLATE_ID = 'template_i8ta6bx';
 const EMAIL_PUBLIC_KEY = 'D6fTxTt6Bw_v1kEXU';
 
-// Mobile menu elements
-const menuToggle = document.querySelector('.menu-toggle');
-const menuPanel = document.querySelector('.menu-panel');
-
 const isValidEmail = value => /^\S+@\S+\.\S+$/.test(value);
 const isValidPhone = value => value.replace(/\D/g, '').length >= 7;
 
@@ -56,11 +52,13 @@ const validateRequired = (element, message) => {
     return !isInvalid;
 };
 
-const validateFile = (element, message) => {
-    const isInvalid = !element || !element.files || element.files.length === 0;
+const validateFiles = (element, message, maxFiles = 4) => {
+    const fileCount = element && element.files ? element.files.length : 0;
+    const tooMany = fileCount > maxFiles;
+    const isInvalid = fileCount === 0 || tooMany;
     markInvalid(element, isInvalid);
     if (isInvalid) {
-        setError(element, message);
+        setError(element, tooMany ? `Upload up to ${maxFiles} photos.` : message);
     }
     return !isInvalid;
 };
@@ -93,43 +91,64 @@ const validateContact = (phoneInput, emailInput) => {
 };
 
 const getValue = element => (element ? element.value.trim() : '');
-const getFileName = element => {
-    if (!element || !element.files || element.files.length === 0) {
-        return '';
-    }
-    return element.files[0].name;
+
+const fileToDataUrl = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Failed to read file.'));
+    reader.readAsDataURL(file);
+});
+
+const getPhotoData = async (element, maxFiles = 4) => {
+    const files = element && element.files ? Array.from(element.files).slice(0, maxFiles) : [];
+    const dataUrls = await Promise.all(files.map(fileToDataUrl));
+    const names = files.map(file => file.name);
+    return { dataUrls, names };
 };
 
-const buildEmailParams = formType => {
+const buildEmailParams = (formType, photos) => {
     const phone = formType === 'junk'
         ? getValue(document.getElementById('junkPhone'))
         : getValue(document.getElementById('deliveryPhone'));
     const email = formType === 'junk'
         ? getValue(document.getElementById('junkEmail'))
         : getValue(document.getElementById('deliveryEmail'));
+    const customerName = formType === 'junk'
+        ? getValue(document.getElementById('junkName'))
+        : getValue(document.getElementById('deliveryName'));
+
+    const photoData = photos && photos.dataUrls ? photos.dataUrls : [];
+    const photoNames = photos && photos.names ? photos.names : [];
 
     return {
         service_type: formType === 'junk' ? 'Junk Removal' : 'Delivery',
+        customer_name: customerName || 'N/A',
         pickup_address: getValue(document.getElementById('junkPickupAddress')) || 'N/A',
         junk_type: getValue(document.getElementById('junkType')) || 'N/A',
         estimated_volume: getValue(document.getElementById('junkVolume')) || 'N/A',
         preferred_date: getValue(document.getElementById('junkDate')) || 'N/A',
         preferred_time: getValue(document.getElementById('junkTimeWindow')) || 'N/A',
         additional_notes: getValue(document.getElementById('junkNotes')) || 'N/A',
-        junk_photo_link: getFileName(document.getElementById('junkPhoto')) || 'N/A',
         delivery_pickup: getValue(document.getElementById('deliveryPickup')) || 'N/A',
         delivery_dropoff: getValue(document.getElementById('deliveryDropoff')) || 'N/A',
         item_description: getValue(document.getElementById('deliveryDescription')) || 'N/A',
         delivery_date: getValue(document.getElementById('deliveryDate')) || 'N/A',
         delivery_time: getValue(document.getElementById('deliveryTimeWindow')) || 'N/A',
         item_link: getValue(document.getElementById('deliveryItemLink')) || 'N/A',
-        delivery_photo_link: getFileName(document.getElementById('deliveryPhoto')) || 'N/A',
         phone: phone || 'N/A',
         email: email || 'N/A',
         preferred_contact: formType === 'junk'
             ? getValue(document.getElementById('junkContact')) || 'N/A'
             : getValue(document.getElementById('deliveryContact')) || 'N/A',
-        name_or_contact: phone || email || 'N/A'
+        name_or_contact: phone || email || 'N/A',
+        photo_1: photoData[0] || 'N/A',
+        photo_2: photoData[1] || 'N/A',
+        photo_3: photoData[2] || 'N/A',
+        photo_4: photoData[3] || 'N/A',
+        photo_1_name: photoNames[0] || 'N/A',
+        photo_2_name: photoNames[1] || 'N/A',
+        photo_3_name: photoNames[2] || 'N/A',
+        photo_4_name: photoNames[3] || 'N/A'
     };
 };
 
@@ -180,13 +199,21 @@ if (junkForm && deliveryForm && toggle) {
 submitButtons.forEach(button => {
     button.addEventListener('click', async () => {
         const formType = button.dataset.form;
+        const form = formType === 'junk' ? junkForm : deliveryForm;
+        const photoInput = formType === 'junk'
+            ? document.getElementById('junkPhoto')
+            : document.getElementById('deliveryPhoto');
         let isValid = true;
 
         if (formType === 'junk') {
             isValid = validateRequired(document.getElementById('junkPickupAddress'), 'Pickup address is required.') && isValid;
             isValid = validateRequired(document.getElementById('junkDate'), 'Select a service date.') && isValid;
             isValid = validateRequired(document.getElementById('junkTimeWindow'), 'Select a time window.') && isValid;
-            isValid = validateFile(document.getElementById('junkPhoto'), 'Please upload a photo.') && isValid;
+            isValid = validateFiles(
+                document.getElementById('junkPhoto'),
+                'Please upload at least one photo.',
+                4
+            ) && isValid;
             isValid = validateContact(
                 document.getElementById('junkPhone'),
                 document.getElementById('junkEmail')
@@ -199,7 +226,11 @@ submitButtons.forEach(button => {
             isValid = validateRequired(document.getElementById('deliveryDropoff'), 'Drop-off location is required.') && isValid;
             isValid = validateRequired(document.getElementById('deliveryDate'), 'Select a service date.') && isValid;
             isValid = validateRequired(document.getElementById('deliveryTimeWindow'), 'Select a time window.') && isValid;
-            isValid = validateFile(document.getElementById('deliveryPhoto'), 'Please upload a photo.') && isValid;
+            isValid = validateFiles(
+                document.getElementById('deliveryPhoto'),
+                'Please upload at least one photo.',
+                4
+            ) && isValid;
             isValid = validateContact(
                 document.getElementById('deliveryPhone'),
                 document.getElementById('deliveryEmail')
@@ -208,7 +239,16 @@ submitButtons.forEach(button => {
         }
 
         if (isValid) {
-            const sent = await sendEmail(buildEmailParams(formType), button);
+            let photos = { dataUrls: [], names: [] };
+            try {
+                photos = await getPhotoData(photoInput);
+            } catch (error) {
+                console.error('Photo read error:', error);
+                window.alert('There was a problem reading your photos. Please try again.');
+                return;
+            }
+            const params = buildEmailParams(formType, photos);
+            const sent = await sendEmail(params, button);
             if (sent && successModal) {
                 successModal.classList.add('open');
                 successModal.setAttribute('aria-hidden', 'false');
@@ -221,41 +261,6 @@ document.querySelectorAll('input, select, textarea').forEach(field => {
     field.addEventListener('input', () => markInvalid(field, false));
     field.addEventListener('change', () => markInvalid(field, false));
 });
-
-if (menuToggle && menuPanel) {
-    menuToggle.addEventListener('click', () => {
-        const isOpen = menuPanel.classList.toggle('open');
-        menuToggle.classList.toggle('open', isOpen);
-        menuToggle.setAttribute('aria-expanded', String(isOpen));
-        menuToggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-        menuToggle.textContent = isOpen ? '–' : '☰';
-    });
-
-    menuPanel.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            menuPanel.classList.remove('open');
-            menuToggle.classList.remove('open');
-            menuToggle.setAttribute('aria-expanded', 'false');
-            menuToggle.setAttribute('aria-label', 'Open menu');
-            menuToggle.textContent = '☰';
-        });
-    });
-
-    document.addEventListener('click', event => {
-        if (!menuPanel.classList.contains('open')) {
-            return;
-        }
-
-        const isClickInside = menuPanel.contains(event.target) || menuToggle.contains(event.target);
-        if (!isClickInside) {
-            menuPanel.classList.remove('open');
-            menuToggle.classList.remove('open');
-            menuToggle.setAttribute('aria-expanded', 'false');
-            menuToggle.setAttribute('aria-label', 'Open menu');
-            menuToggle.textContent = '☰';
-        }
-    });
-}
 
 if (successModal) {
     successModal.addEventListener('click', event => {
