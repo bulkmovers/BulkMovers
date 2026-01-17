@@ -99,9 +99,37 @@ const fileToDataUrl = file => new Promise((resolve, reject) => {
     reader.readAsDataURL(file);
 });
 
+const compressImage = async (file, maxDimension = 1280, quality = 0.75) => {
+    if (!file || !file.type.startsWith('image/')) {
+        return fileToDataUrl(file);
+    }
+    const dataUrl = await fileToDataUrl(file);
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+            const largestSide = Math.max(image.width, image.height);
+            const scale = largestSide > maxDimension ? maxDimension / largestSide : 1;
+            const width = Math.round(image.width * scale);
+            const height = Math.round(image.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            if (!context) {
+                reject(new Error('Canvas not supported.'));
+                return;
+            }
+            context.drawImage(image, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        image.onerror = () => reject(new Error('Failed to load image.'));
+        image.src = dataUrl;
+    });
+};
+
 const getPhotoData = async (element, maxFiles = 4) => {
     const files = element && element.files ? Array.from(element.files).slice(0, maxFiles) : [];
-    const dataUrls = await Promise.all(files.map(fileToDataUrl));
+    const dataUrls = await Promise.all(files.map(file => compressImage(file)));
     const names = files.map(file => file.name);
     return { dataUrls, names };
 };
