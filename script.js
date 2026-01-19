@@ -170,7 +170,7 @@ const sendEmail = async (params, button) => {
         return true;
     } catch (error) {
         console.error('EmailJS error:', error);
-        window.alert('There was a problem sending your request. Please try again.');
+        window.alert(`There was a problem sending your request: ${errorText}`);
         return false;
     } finally {
         button.disabled = false;
