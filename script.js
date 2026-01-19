@@ -169,6 +169,7 @@ const sendEmail = async (params, button) => {
         });
         return true;
     } catch (error) {
+        const errorText = error && (error.text || error.message) ? `${error.text || error.message}` : 'Unknown error';
         console.error('EmailJS error:', error);
         window.alert(`There was a problem sending your request: ${errorText}`);
         return false;
