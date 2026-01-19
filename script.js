@@ -99,7 +99,7 @@ const fileToDataUrl = file => new Promise((resolve, reject) => {
     reader.readAsDataURL(file);
 });
 
-const compressImage = async (file, maxDimension = 1280, quality = 0.75) => {
+const compressImage = async (file, maxDimension = 1280, quality = 0.8) => {
     if (!file || !file.type.startsWith('image/')) {
         return fileToDataUrl(file);
     }
