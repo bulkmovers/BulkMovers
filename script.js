@@ -92,71 +92,26 @@ const validateContact = (phoneInput, emailInput) => {
 
 const getValue = element => (element ? element.value.trim() : '');
 
-const fileToDataUrl = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Failed to read file.'));
-    reader.readAsDataURL(file);
-});
-
-const getPhotoData = async (element, maxFiles = 4, maxTotalBytes = 30 * 1024 * 1024) => {
-    const files = element && element.files ? Array.from(element.files).slice(0, maxFiles) : [];
-    const totalBytes = files.reduce((sum, file) => sum + (file ? file.size : 0), 0);
-    if (totalBytes > maxTotalBytes) {
-        throw new Error('Total photo size exceeds limit.');
+const setFormMeta = (formType, form) => {
+    if (!form) {
+        return;
     }
-    const dataUrls = await Promise.all(files.map(file => fileToDataUrl(file)));
-    const names = files.map(file => file.name);
-    return { dataUrls, names };
+    const phone = getValue(form.querySelector('[name="phone"]'));
+    const email = getValue(form.querySelector('[name="email"]'));
+    const nameOrContact = phone || email || 'N/A';
+    const serviceType = formType === 'junk' ? 'Junk Removal' : 'Delivery';
+    const serviceInput = form.querySelector('input[name="service_type"]');
+    const contactInput = form.querySelector('input[name="name_or_contact"]');
+
+    if (serviceInput) {
+        serviceInput.value = serviceType;
+    }
+    if (contactInput) {
+        contactInput.value = nameOrContact;
+    }
 };
 
-const buildEmailParams = (formType, photos) => {
-    const phone = formType === 'junk'
-        ? getValue(document.getElementById('junkPhone'))
-        : getValue(document.getElementById('deliveryPhone'));
-    const email = formType === 'junk'
-        ? getValue(document.getElementById('junkEmail'))
-        : getValue(document.getElementById('deliveryEmail'));
-    const customerName = formType === 'junk'
-        ? getValue(document.getElementById('junkName'))
-        : getValue(document.getElementById('deliveryName'));
-
-    const photoData = photos && photos.dataUrls ? photos.dataUrls : [];
-    const photoNames = photos && photos.names ? photos.names : [];
-
-    return {
-        service_type: formType === 'junk' ? 'Junk Removal' : 'Delivery',
-        customer_name: customerName || 'N/A',
-        pickup_address: getValue(document.getElementById('junkPickupAddress')) || 'N/A',
-        junk_type: getValue(document.getElementById('junkType')) || 'N/A',
-        estimated_volume: getValue(document.getElementById('junkVolume')) || 'N/A',
-        preferred_date: getValue(document.getElementById('junkDate')) || 'N/A',
-        preferred_time: getValue(document.getElementById('junkTimeWindow')) || 'N/A',
-        additional_notes: getValue(document.getElementById('junkNotes')) || 'N/A',
-        delivery_pickup: getValue(document.getElementById('deliveryPickup')) || 'N/A',
-        delivery_dropoff: getValue(document.getElementById('deliveryDropoff')) || 'N/A',
-        item_description: getValue(document.getElementById('deliveryDescription')) || 'N/A',
-        delivery_date: getValue(document.getElementById('deliveryDate')) || 'N/A',
-        delivery_time: getValue(document.getElementById('deliveryTimeWindow')) || 'N/A',
-        item_link: getValue(document.getElementById('deliveryItemLink')) || 'N/A',
-        phone: phone || 'N/A',
-        email: email || 'N/A',
-        preferred_contact: formType === 'junk'
-            ? getValue(document.getElementById('junkContact')) || 'N/A'
-            : getValue(document.getElementById('deliveryContact')) || 'N/A',
-        name_or_contact: phone || email || 'N/A',
-        photo_1: photoData[0] || 'N/A',
-        photo_2: photoData[1] || 'N/A',
-        photo_3: photoData[2] || 'N/A',
-        photo_4: photoData[3] || 'N/A',
-        photo_1_name: photoNames[0] || 'N/A',
-        photo_2_name: photoNames[1] || 'N/A',
-        photo_3_name: photoNames[2] || 'N/A',
-        photo_4_name: photoNames[3] || 'N/A'
-    };
-};
-
-const sendEmail = async (params, button) => {
+const sendEmail = async (form, button) => {
     if (!emailClient) {
         window.alert('Email service not available. Please try again later.');
         return false;
@@ -164,7 +119,7 @@ const sendEmail = async (params, button) => {
 
     button.disabled = true;
     try {
-        await emailClient.send(EMAIL_SERVICE_ID, EMAIL_TEMPLATE_ID, params, {
+        await emailClient.sendForm(EMAIL_SERVICE_ID, EMAIL_TEMPLATE_ID, form, {
             publicKey: EMAIL_PUBLIC_KEY
         });
         return true;
@@ -205,9 +160,6 @@ submitButtons.forEach(button => {
     button.addEventListener('click', async () => {
         const formType = button.dataset.form;
         const form = formType === 'junk' ? junkForm : deliveryForm;
-        const photoInput = formType === 'junk'
-            ? document.getElementById('junkPhoto')
-            : document.getElementById('deliveryPhoto');
         let isValid = true;
 
         if (formType === 'junk') {
@@ -244,16 +196,8 @@ submitButtons.forEach(button => {
         }
 
         if (isValid) {
-            let photos = { dataUrls: [], names: [] };
-            try {
-                photos = await getPhotoData(photoInput);
-            } catch (error) {
-                console.error('Photo read error:', error);
-                window.alert('Total photo size is too large. Please keep it under 30 MB.');
-                return;
-            }
-            const params = buildEmailParams(formType, photos);
-            const sent = await sendEmail(params, button);
+            setFormMeta(formType, form);
+            const sent = await sendEmail(form, button);
             if (sent && successModal) {
                 successModal.classList.add('open');
                 successModal.setAttribute('aria-hidden', 'false');
