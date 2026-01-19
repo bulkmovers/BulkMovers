@@ -31,7 +31,7 @@ body {
 }
 
 .corner-brand {
-    position: fixed;
+    position: absolute;
     top: 14px;
     left: 16px;
     font-family: "Neue Montreal", "Helvetica Neue", Arial, sans-serif;
